@@ -1,0 +1,16 @@
+[package]
+name = "genetic"
+version = "0.1.0"
+authors = ["Daniel Bider <bider.daniel@gmail.com>"]
+
+[dependencies]
+uuid = { version = "*", features = ["v4"] }
+rand = "*"
+[dependencies.conrod]
+version = "*"
+default-features = false
+features = ["glium", "glutin"]
+
+[[bin]]
+name = "genetic"
+path = "./src/main.rs"
