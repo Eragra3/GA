@@ -1,4 +1,7 @@
 extern crate rand;
+
+use rand::{thread_rng, Rng};
+
 use evo_params::EvolutionParams;
 
 #[derive(Debug)]
@@ -7,12 +10,21 @@ pub struct Specimen {
 }
 
 impl Specimen {
-    fn mutate(&mut self, evolution_params: EvolutionParams) {
+    fn mutate(&mut self, evolution_params: &EvolutionParams) {
+        print!("before: {:?}", self);
         for index in 0..self.genotype.len() {
             if rand::random::<f64>() < evolution_params.mutation_rate {
                 swap_random(&mut self.genotype, index)
             }
         }
+        print!("after: {:?}", self);
+    }
+
+    pub fn random(evolution_params: &EvolutionParams) -> Specimen {
+        let mut genotype: Vec<usize> = (0..evolution_params.genotype_length).collect();
+        rand::thread_rng().shuffle(genotype.as_mut_slice());
+        let specimen: Specimen = Specimen { genotype: genotype };
+        specimen
     }
 }
 
