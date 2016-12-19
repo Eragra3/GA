@@ -1,13 +1,14 @@
 use rand::{self, thread_rng, Rng};
 
 use evo_params::EvolutionParams;
+use city::City;
 
 #[derive(Debug)]
-pub struct Specimen {
-    genotype: Vec<usize>,
+pub struct Specimen<'a> {
+    genotype: Vec<&'a City>,
 }
 
-impl Specimen {
+impl<'a> Specimen<'a> {
     pub fn mutate(&mut self, evolution_params: &EvolutionParams) {
         print!("before: {:?}\n", self);
         for index in 0..self.genotype.len() {
@@ -18,11 +19,20 @@ impl Specimen {
         print!("after: {:?}", self);
     }
 
-    pub fn random(evolution_params: &EvolutionParams) -> Specimen {
-        let mut genotype: Vec<usize> = (0..evolution_params.genotype_length).collect();
-        rand::thread_rng().shuffle(genotype.as_mut_slice());
+    pub fn random(cities: &Vec<City>) -> Specimen {
+        let mut indecies: Vec<usize> = (0..cities.len()).collect();
+        rand::thread_rng().shuffle(indecies.as_mut_slice());
+        let genotype: Vec<&City> = indecies.into_iter().map(|i| &cities[i]).collect();
         let specimen: Specimen = Specimen { genotype: genotype };
         specimen
+    }
+
+    pub fn fitness(&self) -> f64 {
+        let mut fitness: f64 = 0.0;
+        for i in 0..self.genotype.len() - 1 {
+            fitness += self.genotype[i].distance_to(self.genotype[i + 1]);
+        }
+        fitness
     }
 }
 

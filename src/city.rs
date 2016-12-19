@@ -17,12 +17,12 @@ impl City {
         }
     }
 
-    pub fn distance_to(&mut self, other: City) -> f64 {
+    pub fn distance_to(&self, other: &City) -> f64 {
         let mut x = self.x - other.x;
         x *= x;
         let mut y = self.y - other.y;
         y *= y;
-        (x - y).sqrt()
+        (x + y).sqrt()
     }
 }
 

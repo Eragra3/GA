@@ -22,10 +22,14 @@ fn main() {
     };
 
     let mut solutions: Vec<Specimen> = (0..evolution_params.population_count)
-        .map(|_| Specimen::random(&evolution_params))
+        .map(|_| Specimen::random(&cities))
         .collect();
 
+    for solution in solutions {
+        print!("fitness: \t{:?}\n", solution.fitness());
+    }
+
     for i in 0..evolution_params.generations {
-        
+
     }
 }
