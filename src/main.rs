@@ -20,12 +20,6 @@ struct City {
 
 use std::fmt::{Formatter, Error, Display};
 
-impl Display for City {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        write!(f, "Name: {}\n\tx: {}\n\ty: {}", self.name, self.x, self.y)
-    }
-}
-
 impl City {
     fn new(x: f64, y: f64) -> City {
         use uuid::Uuid;
