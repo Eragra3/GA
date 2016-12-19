@@ -10,8 +10,8 @@ pub struct Specimen {
 }
 
 impl Specimen {
-    fn mutate(&mut self, evolution_params: &EvolutionParams) {
-        print!("before: {:?}", self);
+    pub fn mutate(&mut self, evolution_params: &EvolutionParams) {
+        print!("before: {:?}\n", self);
         for index in 0..self.genotype.len() {
             if rand::random::<f64>() < evolution_params.mutation_rate {
                 swap_random(&mut self.genotype, index)

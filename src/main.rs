@@ -19,7 +19,8 @@ fn main() {
         genotype_length: cities.len()
     };
 
-    let specimen = Specimen::random(&evolution_params);
+    let mut specimen = Specimen::random(&evolution_params);
+    specimen.mutate(&evolution_params);
     // let mut solutions: Vec<Specimen> =
     //     (0..evolution_params.population_count).map(|_| rand::random::<Specimen>()).collect();
 
