@@ -1,6 +1,4 @@
-extern crate rand;
-
-use rand::{thread_rng, Rng};
+use rand::{self, thread_rng, Rng};
 
 use evo_params::EvolutionParams;
 
@@ -28,8 +26,7 @@ impl Specimen {
     }
 }
 
-fn swap_random<T>(vector: &mut Vec<T>, index: usize) {
-    let mutable_vector = vector.as_mut_slice();
+fn swap_random<T>(mutable_vector: &mut [T], index: usize) {
     let vec_len = mutable_vector.len();
     if index == 0 {
         mutable_vector.swap(0, 1);
