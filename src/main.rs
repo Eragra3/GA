@@ -55,7 +55,6 @@ fn main() {
 
         // get best specimen
         {
-            println!("\tbest-fitness: \t{:?}", best_specimen.fitness());
 
             let mut worst: &Specimen = &current_generation[0];
             let mut worst_fitness = worst.fitness();
@@ -73,8 +72,9 @@ fn main() {
                 }
             }
 
-            println!("\tbest: \t{:?}", best_fitness);
-            println!("\tworst: \t{:?}", worst_fitness);
+            println!("\tbest-fitness: \t{:?}", -best_specimen.fitness());
+            println!("\tbest: \t{:?}", -best_fitness);
+            println!("\tworst: \t{:?}", -worst_fitness);
         }
 
         // swap generations
