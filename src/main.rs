@@ -4,6 +4,7 @@ extern crate rand;
 mod specimen;
 mod evo_params;
 mod city;
+mod uwaterloo_reader;
 
 use evo_params::EvolutionParams;
 use specimen::Specimen;
@@ -13,7 +14,9 @@ use std::f64;
 
 fn main() {
 
-    let cities: Vec<City> = (0..10).map(|_| City::random()).collect();
+    let cities: Vec<City> = uwaterloo_reader::read("./data/dj38.tsp");
+
+    // let cities: Vec<City> = (0..10).map(|_| City::random()).collect();
 
     let evolution_params: EvolutionParams = EvolutionParams {
         generations: 100,

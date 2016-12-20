@@ -1,4 +1,5 @@
 use rand;
+use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
 pub struct City {
@@ -8,6 +9,14 @@ pub struct City {
 }
 
 impl City {
+    pub fn new(name: &str, x: f64, y: f64) -> City {
+        City {
+            name: String::from_str(name).unwrap(),
+            x: x,
+            y: y,
+        }
+    }
+
     pub fn random() -> City {
         use uuid::Uuid;
         City {
