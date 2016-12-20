@@ -3,7 +3,7 @@ use rand::{self, thread_rng, Rng};
 use evo_params::EvolutionParams;
 use city::City;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Specimen<'a> {
     genotype: Vec<&'a City>,
 }
@@ -30,7 +30,7 @@ impl<'a> Specimen<'a> {
         for i in 0..self.genotype.len() - 1 {
             fitness += self.genotype[i].distance_to(self.genotype[i + 1]);
         }
-        fitness
+        -fitness
     }
 }
 

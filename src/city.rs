@@ -1,6 +1,6 @@
 use rand;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct City {
     pub name: String,
     pub x: f64,
