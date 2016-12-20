@@ -21,9 +21,11 @@ fn main() {
         genotype_length: cities.len(),
     };
 
-    let mut solutions: Vec<Specimen> = (0..evolution_params.population_count)
-        .map(|_| Specimen::random(&cities))
-        .collect();
+    let mut prevSolutions: Vec<&Specimen> = vec![];
+    let mut solutions: Vec<&Specimen> = vec![];
+    for i in 0..evolution_params.population_count {
+        solutions.push(&Specimen::random(&cities))
+    }
 
     for solution in solutions {
         print!("fitness: \t{:?}\n", solution.fitness());
