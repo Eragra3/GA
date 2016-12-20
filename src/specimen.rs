@@ -3,25 +3,23 @@ use rand::{self, thread_rng, Rng};
 use evo_params::EvolutionParams;
 use city::City;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Specimen<'a> {
     genotype: Vec<&'a City>,
 }
 
 impl<'a> Specimen<'a> {
     pub fn mutate(&mut self, evolution_params: &EvolutionParams) {
-        print!("before: {:?}\n", self);
         for index in 0..self.genotype.len() {
             if rand::random::<f64>() < evolution_params.mutation_rate {
                 swap_random(&mut self.genotype, index)
             }
         }
-        print!("after: {:?}", self);
     }
 
     pub fn random(cities: &Vec<City>) -> Specimen {
         let mut indecies: Vec<usize> = (0..cities.len()).collect();
-        rand::thread_rng().shuffle(indecies.as_mut_slice());
+        rand::thread_rng().shuffle(&mut indecies);
         let genotype: Vec<&City> = indecies.into_iter().map(|i| &cities[i]).collect();
         let specimen: Specimen = Specimen { genotype: genotype };
         specimen
@@ -42,8 +40,8 @@ fn swap_random<T>(mutable_vector: &mut [T], index: usize) {
         mutable_vector.swap(0, 1);
         return;
     }
-    if index == vec_len {
-        mutable_vector.swap(vec_len, vec_len - 1);
+    if index == vec_len - 1 {
+        mutable_vector.swap(index, index - 1);
         return;
     }
 
