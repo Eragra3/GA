@@ -1,4 +1,7 @@
 use rand::{self, thread_rng, Rng};
+use std::fs::File;
+use std::path::Path;
+use std::io::Write;
 
 use evo_params::EvolutionParams;
 use city::City;
@@ -31,6 +34,16 @@ impl<'a> Specimen<'a> {
             fitness += self.genotype[i].distance_to(self.genotype[i + 1]);
         }
         -fitness
+    }
+
+    pub fn dump_path(self, path_str: &str) {
+        let path = Path::new(path_str);
+        let mut file = File::create(path)
+            .expect(format!("Couldn't create file at \"{:?}\"", path_str).as_ref());
+
+        for city in &self.genotype {
+            file.write_all(city.dump().as_bytes());
+        }
     }
 }
 

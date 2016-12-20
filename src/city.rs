@@ -33,6 +33,10 @@ impl City {
         y *= y;
         (x + y).sqrt()
     }
+
+    pub fn dump(&self) -> String {
+        format!("{} {} {}", self.name, self.x, self.y)
+    }
 }
 
 fn random() -> f64 {
