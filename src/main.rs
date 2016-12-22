@@ -1,20 +1,23 @@
 extern crate uuid;
 extern crate rand;
+extern crate pbr;
 
 mod specimen;
 mod evo_params;
 mod city;
 mod uwaterloo_reader;
 
+use std::f64;
+use pbr::ProgressBar;
+
 use evo_params::EvolutionParams;
 use specimen::Specimen;
 use city::City;
 
-use std::f64;
-
 fn main() {
 
-    let cities: Vec<City> = uwaterloo_reader::read("./data/dj38.tsp");
+    let cities: Vec<City> = uwaterloo_reader::read("./data/world.tsp");
+    // let cities: Vec<City> = uwaterloo_reader::read("./data/lu980.tsp");
 
     // let cities: Vec<City> = (0..10).map(|_| City::random()).collect();
 
@@ -36,7 +39,9 @@ fn main() {
 
     let mut best_specimen: Specimen;
 
+    println!("");
     for generation in 0..evolution_params.generations {
+        let mut pb = ProgressBar::new(evolution_params.population_count as u64);
         print!("generation {}\n", generation);
 
         {
@@ -45,17 +50,17 @@ fn main() {
         }
 
         for i in 0..evolution_params.population_count {
-
             let parent = tournament(&current_generation, &evolution_params);
 
             let mut new_specimen = parent.clone();
             new_specimen.mutate(&evolution_params);
             next_generation.push(new_specimen);
+
+            pb.inc();
         }
 
         // get best specimen
         {
-
             let mut worst: &Specimen = &current_generation[0];
             let mut worst_fitness = worst.fitness();
             let mut best: &Specimen = &current_generation[0];

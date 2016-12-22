@@ -6,6 +6,7 @@ authors = ["Daniel Bider <bider.daniel@gmail.com>"]
 [dependencies]
 uuid = { version = "*", features = ["v4"] }
 rand = "*"
+pbr = "1.0.0-alpha.2"
 [dependencies.conrod]
 version = "*"
 default-features = false
