@@ -5,7 +5,6 @@ use std::io::BufRead;
 use std::f64;
 use std::str::FromStr;
 use pbr::ProgressBar;
-use std::time::Duration;
 
 use city::City;
 

@@ -16,17 +16,18 @@ use city::City;
 
 fn main() {
 
-    let PB_BUFFER = 10; 
+    static PB_BUFFER: u64 = 10;
 
     // let cities: Vec<City> = uwaterloo_reader::read("./data/world.tsp");
     let cities: Vec<City> = uwaterloo_reader::read("./data/lu980.tsp");
+    // let cities: Vec<City> = uwaterloo_reader::read("./data/dj38.tsp");
 
     // let cities: Vec<City> = (0..10).map(|_| City::random()).collect();
 
     let evolution_params: EvolutionParams = EvolutionParams {
         generations: 100,
         population_count: 100,
-        mutation_rate: 0.3,
+        mutation_rate: 0.03,
         crossover_rate: 0.85,
         genotype_length: cities.len(),
         tournament_size: 5,
@@ -39,7 +40,7 @@ fn main() {
         current_generation.push(Specimen::random(&cities));
     }
 
-    let mut best_specimen: Specimen;
+    let mut best_specimen: Option<Specimen> = None;
 
     println!("");
     for generation in 0..evolution_params.generations {
@@ -48,12 +49,12 @@ fn main() {
 
         {
             let spec_ref = current_generation.iter().max_by_key(|v| Ordf64(v.fitness())).unwrap();
-            best_specimen = spec_ref.clone();
+            best_specimen = Some(spec_ref.clone());
         }
 
-        let mut pb_buf = 0; 
+        let mut pb_buf = 0;
 
-        for i in 0..evolution_params.population_count {
+        for _ in 0..evolution_params.population_count {
             let parent = tournament(&current_generation, &evolution_params);
 
             let mut new_specimen;
@@ -66,9 +67,9 @@ fn main() {
 
             new_specimen.mutate(&evolution_params);
             next_generation.push(new_specimen);
-            
+
             pb_buf += 1;
-            if (pb_buf == PB_BUFFER) {
+            if pb_buf == PB_BUFFER {
                 pb.add(PB_BUFFER);
                 pb_buf = 0;
             }
@@ -92,15 +93,29 @@ fn main() {
                 }
             }
 
-            println!("\tbest-fitness: \t{:?}", -best_specimen.fitness());
-            println!("\tbest: \t{:?}", -best_fitness);
-            println!("\tworst: \t{:?}", -worst_fitness);
+            match best_specimen {
+                Some(ref best) => println!("\tbest-fitness: \t{:?}", best.fitness()),
+                None => print!("No specimen found!"),
+            }
+            println!("\tbest: \t{:?}", best_fitness);
+            println!("\tworst: \t{:?}", worst_fitness);
         }
 
         // swap generations
         std::mem::swap(&mut current_generation, &mut next_generation);
         next_generation.clear();
     }
+
+    // print result
+    match best_specimen {
+        Some(ref specimen) => {
+            // print!("\n\nSolution - {:?}", specimen);
+            print!("\n\tIs valid - {:?}", specimen.is_valid());
+            print!("\n\tGenotype - {:?}", specimen.get_names());
+        }
+        None => print!("No solution found!"),
+    }
+
 }
 
 use std::collections::HashSet;

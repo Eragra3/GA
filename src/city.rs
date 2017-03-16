@@ -1,6 +1,4 @@
-use std::str::FromStr;
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct City {
     pub name: u64,
     pub x: f64,
@@ -28,3 +26,21 @@ impl City {
         format!("{} {} {}", self.name, self.x, self.y)
     }
 }
+
+impl PartialEq for City {
+    fn eq(&self, other: &City) -> bool {
+        self.name == other.name
+    }
+}
+
+// impl PartialOrd for City {
+//     fn partial_cmp(&self, other: &City) -> Option<Ordering> {
+//         Some(self.name.cmp(&other.name))
+//     }
+// }
+
+// impl Ord for City {
+//     fn cmp(&self, other: &City) -> Ordering {
+//         self.name.cmp(&other.name)
+//     }
+// }
