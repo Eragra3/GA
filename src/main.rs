@@ -16,15 +16,17 @@ use city::City;
 
 fn main() {
 
-    let cities: Vec<City> = uwaterloo_reader::read("./data/world.tsp");
-    // let cities: Vec<City> = uwaterloo_reader::read("./data/lu980.tsp");
+    let PB_BUFFER = 10; 
+
+    // let cities: Vec<City> = uwaterloo_reader::read("./data/world.tsp");
+    let cities: Vec<City> = uwaterloo_reader::read("./data/lu980.tsp");
 
     // let cities: Vec<City> = (0..10).map(|_| City::random()).collect();
 
     let evolution_params: EvolutionParams = EvolutionParams {
         generations: 100,
         population_count: 100,
-        mutation_rate: 0.05,
+        mutation_rate: 0.3,
         crossover_rate: 0.85,
         genotype_length: cities.len(),
         tournament_size: 5,
@@ -49,14 +51,27 @@ fn main() {
             best_specimen = spec_ref.clone();
         }
 
+        let mut pb_buf = 0; 
+
         for i in 0..evolution_params.population_count {
             let parent = tournament(&current_generation, &evolution_params);
 
-            let mut new_specimen = parent.clone();
+            let mut new_specimen;
+            if rand::random::<f64>() < evolution_params.crossover_rate {
+                let waifu = tournament(&current_generation, &evolution_params);
+                new_specimen = parent.crossover(&waifu);
+            } else {
+                new_specimen = parent.clone();
+            }
+
             new_specimen.mutate(&evolution_params);
             next_generation.push(new_specimen);
-
-            pb.inc();
+            
+            pb_buf += 1;
+            if (pb_buf == PB_BUFFER) {
+                pb.add(PB_BUFFER);
+                pb_buf = 0;
+            }
         }
 
         // get best specimen

@@ -1,4 +1,3 @@
-use rand;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
@@ -28,8 +27,4 @@ impl City {
     pub fn dump(&self) -> String {
         format!("{} {} {}", self.name, self.x, self.y)
     }
-}
-
-fn random() -> f64 {
-    rand::random::<f64>() * 100.0
 }

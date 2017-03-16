@@ -9,20 +9,21 @@ use std::time::Duration;
 
 use city::City;
 
+static REFRESH_RATE: u64 = 1000;
+
 pub fn read(path_str: &str) -> Vec<City> {
 
     let path = Path::new(path_str);
 
     // just to get number of lines
-    let dummyFile = match File::open(path) {
+    let dummy_file = match File::open(path) {
         Ok(file) => file,
         Err(e) => {
             panic!("File {} cannot be opened!\n{}", path_str, e);
         }
     };
-    let dummyLines = BufReader::new(dummyFile).lines();
-    let mut pb = ProgressBar::new(dummyLines.count() as u64);
-    pb.set_max_refresh_rate(Some(Duration::from_secs(1)));
+    let dummy_lines = BufReader::new(dummy_file).lines();
+    let mut pb = ProgressBar::new(dummy_lines.count() as u64);
 
     // properly open file
     let file = match File::open(path) {
@@ -35,9 +36,11 @@ pub fn read(path_str: &str) -> Vec<City> {
     let mut read_cities = false;
     let mut cities = vec![];
 
-    pb.format("╢▌▌░╟");
+
+    let mut index = 0;
 
     for line in BufReader::new(file).lines() {
+        index += 1;
         let l = line.unwrap();
 
         if l == "EOF" {
@@ -54,8 +57,12 @@ pub fn read(path_str: &str) -> Vec<City> {
             read_cities = true;
         }
 
-        pb.inc();
+        if index % REFRESH_RATE == 0 {
+            pb.add(REFRESH_RATE);
+        }
     }
+
+    pb.finish_print(&format!("loaded {} cities", index));
 
     cities
 }

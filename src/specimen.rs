@@ -20,12 +20,27 @@ impl<'a> Specimen<'a> {
         }
     }
 
+    pub fn crossover<'b: 'a>(&self, other: &Specimen<'b>) -> Specimen<'a> {
+        let mut genotype: Vec<&City> = Vec::with_capacity(self.genotype.len());
+        let cut_point = rand::thread_rng().gen_range(0, self.genotype.len());
+        for i in 0..cut_point {
+            genotype.push(self.genotype[i]);
+        }
+        for i in cut_point..self.genotype.len() {
+            genotype.push(other.genotype[i]);
+        }
+        Specimen::new(genotype)
+    }
+
     pub fn random(cities: &Vec<City>) -> Specimen {
         let mut indecies: Vec<usize> = (0..cities.len()).collect();
         rand::thread_rng().shuffle(&mut indecies);
         let genotype: Vec<&City> = indecies.into_iter().map(|i| &cities[i]).collect();
-        let specimen: Specimen = Specimen { genotype: genotype };
-        specimen
+        Specimen::new(genotype)
+    }
+
+    pub fn new(genotype: Vec<&City>) -> Specimen {
+        Specimen { genotype: genotype }
     }
 
     pub fn fitness(&self) -> f64 {
