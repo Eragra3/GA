@@ -7,11 +7,13 @@ mod evo_params;
 mod city;
 mod uwaterloo_reader;
 
-use std::f64;
 use pbr::ProgressBar;
 
+use std::time::Duration;
+use std::f64;
+
 use evo_params::EvolutionParams;
-use specimen::Specimen;
+use specimen::*;
 use city::City;
 
 fn main() {
@@ -27,32 +29,32 @@ fn main() {
     let evolution_params: EvolutionParams = EvolutionParams {
         generations: 100,
         population_count: 100,
-        mutation_rate: 0.03,
+        mutation_rate: 0.005,
         crossover_rate: 0.85,
         genotype_length: cities.len(),
-        tournament_size: 5,
+        tournament_size: 3,
     };
 
-    let mut next_generation: Vec<Specimen> = vec![];
-    let mut current_generation: Vec<Specimen> = vec![];
+    let mut next_generation: Vec<Specimen<City>> = vec![];
+    let mut current_generation: Vec<Specimen<City>> = vec![];
 
     for _ in 0..evolution_params.population_count {
-        current_generation.push(Specimen::random(&cities));
+        current_generation.push(Specimen::<City>::random(&cities));
     }
 
-    let mut best_specimen: Option<Specimen> = None;
+    let mut best_specimen: Option<Specimen<City>> = None;
 
     println!("");
     for generation in 0..evolution_params.generations {
         let mut pb = ProgressBar::new(evolution_params.population_count as u64);
+        pb.set_max_refresh_rate(Some(Duration::from_millis(250)));
+
         print!("generation {}\n", generation);
 
         {
             let spec_ref = current_generation.iter().max_by_key(|v| Ordf64(v.fitness())).unwrap();
-            best_specimen = Some(spec_ref.clone());
+            best_specimen = Some((*spec_ref).clone());
         }
-
-        let mut pb_buf = 0;
 
         for _ in 0..evolution_params.population_count {
             let parent = tournament(&current_generation, &evolution_params);
@@ -62,24 +64,21 @@ fn main() {
                 let waifu = tournament(&current_generation, &evolution_params);
                 new_specimen = parent.crossover(&waifu);
             } else {
-                new_specimen = parent.clone();
+                new_specimen = parent;
             }
 
             new_specimen.mutate(&evolution_params);
             next_generation.push(new_specimen);
 
-            pb_buf += 1;
-            if pb_buf == PB_BUFFER {
-                pb.add(PB_BUFFER);
-                pb_buf = 0;
-            }
+            pb.inc();
         }
+        pb.finish_println("");
 
         // get best specimen
         {
-            let mut worst: &Specimen = &current_generation[0];
+            let mut worst: &Specimen<City> = &current_generation[0];
             let mut worst_fitness = worst.fitness();
-            let mut best: &Specimen = &current_generation[0];
+            let mut best: &Specimen<City> = &current_generation[0];
             let mut best_fitness = best.fitness();
             for specimen in &current_generation {
                 let fitness = specimen.fitness();
@@ -119,9 +118,9 @@ fn main() {
 }
 
 use std::collections::HashSet;
-fn tournament<'a>(specimens: &Vec<Specimen<'a>>,
+fn tournament<T: CanBeEvaluated + Clone>(specimens: &Vec<T>,
                   evolution_params: &EvolutionParams)
-                  -> Specimen<'a> {
+                  -> T {
     let mut indices: HashSet<usize> = HashSet::new();
     while indices.len() < evolution_params.tournament_size {
         let index = random_index(&specimens);
@@ -129,7 +128,7 @@ fn tournament<'a>(specimens: &Vec<Specimen<'a>>,
             indices.insert(index);
         }
     }
-    let mut winner: &Specimen = &specimens[0];
+    let mut winner: &T = &specimens[0];
     let mut best_fitness = winner.fitness();
     for index in indices {
         let player = &specimens[index];
@@ -139,7 +138,7 @@ fn tournament<'a>(specimens: &Vec<Specimen<'a>>,
             winner = player;
         }
     }
-    return winner.clone();
+    return (*winner).clone();
 }
 
 use rand::Rng;
