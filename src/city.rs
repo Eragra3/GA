@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct City {
     pub name: u64,
     pub x: f64,
@@ -22,6 +22,7 @@ impl City {
         (x + y).sqrt()
     }
 
+    #[allow(dead_code)]
     pub fn dump(&self) -> String {
         format!("{} {} {}", self.name, self.x, self.y)
     }

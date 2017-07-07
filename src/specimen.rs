@@ -9,17 +9,13 @@ use city::City;
 
 #[derive(Debug, PartialEq)]
 pub struct Specimen<'a, T: 'a> {
-    genotype: Vec<&'a T>,
+    pub genotype: Vec<&'a T>,
 }
 
 impl <'a, T: 'a> Clone for Specimen<'a, T> {
     fn clone(&self) -> Specimen<'a, T> {
-        match *self {
-            Specimen { genotype: ref genotype } => {
-                Specimen {
-                  genotype: genotype.clone()
-                }
-            }
+        Specimen {
+            genotype: (*self).genotype.clone()
         }
     }
 }
@@ -110,13 +106,17 @@ impl <'a> Specimen<'a, City> {
         Specimen { genotype: genotype }
     }
 
+    #[allow(dead_code)]
     pub fn dump_path(&self, path_str: &str) {
         let path = Path::new(path_str);
         let mut file = File::create(path)
             .expect(format!("Couldn't create file at \"{:?}\"", path_str).as_ref());
 
         for city in &self.genotype {
-            file.write_all(city.dump().as_bytes());
+            match file.write_all(city.dump().as_bytes()) {
+                Ok(_) => {},
+                Err(e) => println!("Can't write to file {}, error - {}", path_str, e)
+            }
         }
     }
 

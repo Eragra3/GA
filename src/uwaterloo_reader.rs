@@ -47,8 +47,8 @@ pub fn read(path_str: &str) -> Vec<City> {
         } else if read_cities {
             let mut values = l.split(" ");
             let name = u64::from_str(values.next().unwrap()).unwrap();
-            let x = f64::from_str(values.next().unwrap()).unwrap();
             let y = f64::from_str(values.next().unwrap()).unwrap();
+            let x = f64::from_str(values.next().unwrap()).unwrap();
 
             let city = City::new(name, x, y);
             cities.push(city);
