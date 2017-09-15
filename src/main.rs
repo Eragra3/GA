@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate serde_derive;
+extern crate chrono;
 extern crate rand;
 extern crate pbr;
 extern crate gnuplot;
@@ -6,19 +9,53 @@ mod specimen;
 mod evo_params;
 mod city;
 mod uwaterloo_reader;
+mod logging;
 
 use pbr::ProgressBar;
 use gnuplot::*;
+use chrono::prelude::*;
 
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use std::f64;
 use std::io;
+use std::process;
 
-use evo_params::EvolutionParams;
+use evo_params::*;
 use specimen::*;
 use city::City;
 
 fn main() {
+
+    let config;
+    println!("Loading config from '{}'", evo_params::CONFIG_PATH);
+    match evo_params::load_config() {
+        Ok(c) => {
+            config = c;
+        },
+        Err(e) => {
+                match e {
+                (ConfigError::CantOpenFile, msg) => {
+                    println!("{}", msg);
+                    process::exit(-1);
+                    return
+                },
+                (ConfigError::CantReadFile, msg) => {
+                    println!("{}", msg);
+                    process::exit(-1);
+                },
+                (ConfigError::ConfigInvalid, msg) => {
+                    println!("{}", msg);
+                    process::exit(-1);
+                },
+                (ConfigError::FileNotExisting, msg) => {
+                    println!("{}", msg);
+                    println!("Couldn't find config file, creating default at '{}'", evo_params::CONFIG_PATH);
+                    config = evo_params::get_default();
+                    evo_params::save_config(&config);
+                }
+            }
+        }
+    }
 
     // let cities: Vec<City> = uwaterloo_reader::read("./data/world.tsp");
     // let cities: Vec<City> = uwaterloo_reader::read("./data/lu980.tsp");
@@ -27,15 +64,22 @@ fn main() {
     //print map
     // plot(&cities, false);
 
-    // let cities: Vec<City> = (0..10).map(|_| City::random()).collect();
+    let evolution_params = config.evolution_params;
+    // let evolution_params: EvolutionParams = EvolutionParams {
+    //     generations: 3,
+    //     population_count: 100,
+    //     mutation_rate: 0.03,
+    //     crossover_rate: 0.85,
+    //     tournament_size: 2
+    // };
 
-    let evolution_params: EvolutionParams = EvolutionParams {
-        generations: 100,
-        population_count: 100,
-        mutation_rate: 0.03,
-        crossover_rate: 0.85,
-        tournament_size: 2
-    };
+    let now = Local::now();
+    let generations_log_file_name = format!("{}.csv", now.format("%Y-%m-%d_%H-%M-%S"));
+    let mut generations_logger = logging::get_csv_writer(&generations_log_file_name);
+
+    let mut worst_specimens_fitness: Vec<f64> = Vec::with_capacity(evolution_params.population_count + 1 as usize);
+    let mut avg_specimens_fitness: Vec<f64> = Vec::with_capacity(evolution_params.population_count + 1);
+    let mut best_specimens_fitness: Vec<f64> = Vec::with_capacity(evolution_params.population_count + 1);
 
     let mut next_generation: Vec<Specimen<City>> = vec![];
     let mut current_generation: Vec<Specimen<City>> = vec![];
@@ -44,20 +88,26 @@ fn main() {
         current_generation.push(Specimen::<City>::random(&cities));
     }
 
+    let (mut best_fitness, mut worst_fitness, mut avg_fitness) = get_generation_fitness(&current_generation);
+    
+    //log
+    let row = logging::GenerationRecord {
+        generation: 0,
+        best_fitness: best_fitness,
+        avg_fitness: avg_fitness,
+        worst_fitness: worst_fitness
+    };
+    generations_logger.serialize(row);
+
     let mut best_specimen: Option<Specimen<City>> = None;
 
     println!("");
     for generation in 0..evolution_params.generations {
+
+        println!("generation {}\n", generation);
+
         let mut pb = ProgressBar::new(evolution_params.population_count as u64);
         pb.set_max_refresh_rate(Some(Duration::from_millis(250)));
-        println!("");
-
-        print!("generation {}\n", generation);
-
-        {
-            let spec_ref = current_generation.iter().max_by_key(|v| Ordf64(v.fitness())).unwrap();
-            best_specimen = Some((*spec_ref).clone());
-        }
 
         let mut i = 0;
         while i < evolution_params.population_count {
@@ -65,7 +115,14 @@ fn main() {
 
             let mut new_specimen;
             if rand::random::<f64>() < evolution_params.crossover_rate {
-                let waifu = tournament(&current_generation, &evolution_params);
+                let mut waifu = tournament(&current_generation, &evolution_params);
+                while parent == waifu {
+                    // println!("Can't marry yourself ");
+                    // println!("\nparent - {:?}", parent.get_names());
+                    // println!("\nwaifu - {:?}", waifu.get_names());
+                    waifu = tournament(&current_generation, &evolution_params);
+                }
+                
                 new_specimen = parent.crossover(&waifu);
             } else {
                 new_specimen = parent;
@@ -73,8 +130,9 @@ fn main() {
             
             new_specimen.mutate(&evolution_params);
             
+            //do not allow twins
             if next_generation.contains(&new_specimen) {
-                print!("Duplicate!\n");
+                print!("\t\tTwin!\n");
                 // let pos = next_generation
                 //     .iter()
                 //     .position(|s| s == &new_specimen)
@@ -93,28 +151,34 @@ fn main() {
 
         // get best specimen
         {
-            // let mut worst: &Specimen<City> = &current_generation[0];
-            let mut worst_fitness = f64::NEG_INFINITY;
-            // let mut best: &Specimen<City> = &current_generation[0];
-            let mut best_fitness = f64::NEG_INFINITY;
-            for specimen in &current_generation {
-                let fitness = specimen.fitness();
-                if fitness < worst_fitness {
-                    worst_fitness = fitness;
-                    // worst = &specimen;
-                }
-                if fitness > best_fitness {
-                    best_fitness = fitness;
-                    // best = &specimen;
+            match current_generation.iter().max_by_key(|v| Ordf64(v.fitness())) {
+                Some(best) => {
+                    println!("\tbest-fitness: \t{:?}", best.fitness());
+                    best_specimen = Some((*best).clone());
+                },
+                None => print!("No specimen found!")
+            }
+            
+            match get_generation_fitness(&current_generation) {
+                (b, w, a) => {
+                    best_fitness = b;
+                    worst_fitness = w;
+                    avg_fitness = a;
                 }
             }
 
-            match best_specimen {
-                Some(ref best) => println!("\tbest-fitness: \t{:?}", best.fitness()),
-                None => print!("No specimen found!"),
-            }
             println!("\tbest: \t{:?}", best_fitness);
+            println!("\tavg: \t{:?}", avg_fitness);
             println!("\tworst: \t{:?}", worst_fitness);
+
+            //log
+            let row = logging::GenerationRecord {
+                generation: generation as usize,
+                best_fitness: best_fitness,
+                avg_fitness: avg_fitness,
+                worst_fitness: worst_fitness
+            };
+            generations_logger.serialize(row);
         }
 
         // swap generations
@@ -133,11 +197,28 @@ fn main() {
         }
         None => print!("No solution found!"),
     }
-    
 
     println!("\nPress enter to finish");
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
+}
+
+fn get_generation_fitness<T: CanBeEvaluated>(vector: &Vec<T>) -> (f64, f64, f64) {
+    let mut worst_fitness = f64::INFINITY;
+    let mut best_fitness = f64::NEG_INFINITY;
+    let mut sum_fitness = 0.;
+    for specimen in vector {
+        let fitness = specimen.fitness();
+        if fitness < worst_fitness {
+            worst_fitness = fitness;
+        }
+        if fitness > best_fitness {
+            best_fitness = fitness;
+        }
+        sum_fitness += fitness;
+    }
+    let avg_fitness = sum_fitness / (vector.len() as f64);
+    (best_fitness, worst_fitness, avg_fitness)
 }
 
 fn plot(cities: &Vec<City>, plot_lines: bool) {
@@ -174,7 +255,7 @@ fn tournament<T: CanBeEvaluated + Clone>(specimens: &Vec<T>,
             indices.insert(index);
         }
     }
-    let mut winner: &T = &specimens[0];
+    let mut winner: &T = &specimens[*indices.iter().nth(0).unwrap()];
     let mut best_fitness = winner.fitness();
     for index in indices {
         let player = &specimens[index];
@@ -189,8 +270,7 @@ fn tournament<T: CanBeEvaluated + Clone>(specimens: &Vec<T>,
 
 use rand::Rng;
 fn random_index<T>(vec: &Vec<T>) -> usize {
-    let index = rand::thread_rng().gen_range(0, vec.len());
-    return index;
+    rand::thread_rng().gen_range(0, vec.len())
 }
 
 use std::cmp::Ordering;

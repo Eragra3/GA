@@ -3,6 +3,7 @@ use std::fs::File;
 use std::path::Path;
 use std::io::Write;
 use std::clone::Clone;
+use std::cmp;
 
 use evo_params::EvolutionParams;
 use city::City;
@@ -41,7 +42,7 @@ impl <'a> CanMutate for Specimen<'a, City> {
     fn mutate(&mut self, evolution_params: &EvolutionParams) {
         for index in 0..self.genotype.len() {
             if rand::random::<f64>() < evolution_params.mutation_rate {
-                swap_random(&mut self.genotype, index)
+                swap_neighbour(&mut self.genotype, index);
             }
         }
     }
@@ -125,20 +126,32 @@ impl <'a> Specimen<'a, City> {
     }
 }
 
-fn swap_random<T>(mutable_vector: &mut [T], index: usize) {
+fn swap_neighbour<T>(mutable_vector: &mut [T], index: usize) {
     let vec_len = mutable_vector.len();
     if index == 0 {
         mutable_vector.swap(0, 1);
         return;
     }
     if index == vec_len - 1 {
-        mutable_vector.swap(index, index - 1);
+        mutable_vector.swap(index, 0);
         return;
     }
 
-    if rand::random::<f64>() < 0.5 {
-        mutable_vector.swap(index, index + 1);
-    } else {
-        mutable_vector.swap(index, index - 1);
+    mutable_vector.swap(index, index + 1);
+}
+
+fn swap_random<T>(mutable_vector: &mut [T], index: usize, range: f64) {
+    let offset = ((rand::random::<f64>() - 0.5) * range) as usize;
+    let mut target_index: usize=  offset + index;;
+    target_index = cmp::min(target_index, mutable_vector.len() - 1);
+
+    if target_index == index {
+        if target_index == 0 {
+            target_index = 1;
+        } else if target_index == mutable_vector.len() - 1 {
+            target_index = index - 1;
+        }
     }
+
+    mutable_vector.swap(index, target_index as usize)
 }

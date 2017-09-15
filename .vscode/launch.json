@@ -1,6 +1,13 @@
 {
     "version": "0.2.0",
-    "configurations": [
+    "configurations": [{
+            "type": "lldb",
+            "request": "launch",
+            "name": "Launch",
+            "program": "${workspaceRoot}/target/release/genetic.exe",
+            "args": [],
+            "cwd": "${workspaceRoot}"
+        },
         {
             "name": "Debug",
             "type": "gdb",

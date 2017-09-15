@@ -1,0 +1,10 @@
+---
+evolution_params: 
+  generations: 100
+  population_count: 100
+  mutation_rate: 0.03
+  crossover_rate: 0.85
+  tournament_size: 2
+dataset_path: ""
+log_results: true
+version: 0.1.0
