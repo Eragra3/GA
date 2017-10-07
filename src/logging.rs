@@ -1,7 +1,6 @@
 extern crate csv;
 
 use std::fs::File;
-use std::io::prelude::*;
 use self::csv::{Writer, WriterBuilder};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -17,5 +16,6 @@ pub struct GenerationRecord {
 pub fn get_csv_writer(log_path: &str) -> Writer<File> {
     WriterBuilder::new()
         .delimiter(b',')
-        .from_path(log_path).unwrap()
+        .from_path(log_path)
+        .unwrap()
 }

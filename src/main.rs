@@ -10,12 +10,13 @@ mod evo_params;
 mod city;
 mod uwaterloo_reader;
 mod logging;
+mod mutators;
 
 use pbr::ProgressBar;
 use gnuplot::*;
 use chrono::prelude::*;
 
-use std::time::{Duration, SystemTime};
+use std::time::{Duration};
 use std::f64;
 use std::io;
 use std::process;
@@ -23,6 +24,7 @@ use std::process;
 use evo_params::*;
 use specimen::*;
 use city::City;
+use mutators::*;
 
 fn main() {
 
@@ -33,11 +35,10 @@ fn main() {
             config = c;
         },
         Err(e) => {
-                match e {
+            match e {
                 (ConfigError::CantOpenFile, msg) => {
                     println!("{}", msg);
                     process::exit(-1);
-                    return
                 },
                 (ConfigError::CantReadFile, msg) => {
                     println!("{}", msg);
@@ -59,7 +60,8 @@ fn main() {
 
     // let cities: Vec<City> = uwaterloo_reader::read("./data/world.tsp");
     // let cities: Vec<City> = uwaterloo_reader::read("./data/lu980.tsp");
-    let cities: Vec<City> = uwaterloo_reader::read("./data/dj38.tsp");
+    // let cities: Vec<City> = uwaterloo_reader::read("./data/dj38.tsp");
+    let cities: Vec<City> = uwaterloo_reader::read("./data/qa194.tsp");
 
     //print map
     // plot(&cities, false);
@@ -74,7 +76,8 @@ fn main() {
     // };
 
     let now = Local::now();
-    let generations_log_file_name = format!("{}.csv", now.format("%Y-%m-%d_%H-%M-%S"));
+    let generations_log_file_name = format!("{}{}.csv", config.log_directory, now.format("%Y-%m-%d_%H-%M-%S"));
+    println!("{}", generations_log_file_name);
     let mut generations_logger = logging::get_csv_writer(&generations_log_file_name);
 
     let mut worst_specimens_fitness: Vec<f64> = Vec::with_capacity(evolution_params.population_count + 1 as usize);
@@ -83,6 +86,8 @@ fn main() {
 
     let mut next_generation: Vec<Specimen<City>> = vec![];
     let mut current_generation: Vec<Specimen<City>> = vec![];
+
+    let mutator = RandomSwap::new();
 
     for _ in 0..evolution_params.population_count {
         current_generation.push(Specimen::<City>::random(&cities));
@@ -191,6 +196,7 @@ fn main() {
         Some(specimen) => {
             // print!("\n\nSolution - {:?}", specimen);
             print!("\n\tIs valid - {:?}", specimen.is_valid());
+            print!("\n\tFitness  - {:?}", specimen.fitness());
             print!("\n\tGenotype - {:?}", specimen.get_names());
             //print solution
             plot(&(specimen.genotype.into_iter().map(|c| (*c).clone()).collect()), true);
