@@ -8,5 +8,6 @@ evolution_params:
   allow_twins: false
 dataset_path: ""
 log_results: true
+plot_result: false
 log_directory: logs/
 version: 0.1.0

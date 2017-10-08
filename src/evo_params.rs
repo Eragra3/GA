@@ -21,6 +21,7 @@ pub struct Configuration {
     pub evolution_params: EvolutionParams,
     pub dataset_path: String,
     pub log_results: bool,
+    pub plot_result: bool,
     pub version: String,
     pub log_directory: String
 }
@@ -38,6 +39,7 @@ pub fn get_default() -> Configuration {
         },
         dataset_path: "".to_string(),
         log_results: true,
+        plot_result: false,
         version: "0.1.0".to_string(),
         log_directory: "logs/".to_string()
     }

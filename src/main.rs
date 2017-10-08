@@ -60,8 +60,8 @@ fn main() {
 
     // let cities: Vec<City> = uwaterloo_reader::read("./data/world.tsp");
     // let cities: Vec<City> = uwaterloo_reader::read("./data/lu980.tsp");
-    // let cities: Vec<City> = uwaterloo_reader::read("./data/dj38.tsp");
-    let cities: Vec<City> = uwaterloo_reader::read("./data/qa194.tsp");
+    let cities: Vec<City> = uwaterloo_reader::read("./data/dj38.tsp");
+    // let cities: Vec<City> = uwaterloo_reader::read("./data/qa194.tsp");
 
     //print map
     // plot(&cities, false);
@@ -100,7 +100,8 @@ fn main() {
         generation: 0,
         best_fitness: best_fitness,
         avg_fitness: avg_fitness,
-        worst_fitness: worst_fitness
+        worst_fitness: worst_fitness,
+        new_specimens: 0
     };
     generations_logger.serialize(row);
 
@@ -155,8 +156,14 @@ fn main() {
         {
             match current_generation.iter().max_by_key(|v| Ordf64(v.fitness())) {
                 Some(best) => {
-                    println!("\tbest-fitness: \t{:?}", best.fitness());
-                    best_specimen = Some((*best).clone());
+                    let fitness = best.fitness();
+                    println!("\tbest-fitness: \t{:?}", fitness);
+                    if best_specimen.is_none() {
+                        best_specimen = Some((*best).clone());
+                    }
+                    else if best_specimen.as_ref().map_or(false, |b| b.fitness() < fitness) {
+                        best_specimen = Some((*best).clone());
+                    }
                 },
                 None => print!("No specimen found!")
             }
@@ -169,16 +176,24 @@ fn main() {
                 }
             }
 
+            let new_specimens_count = next_generation
+                .iter()
+                .filter(|s| !current_generation.contains(&s))
+                .count();
+
             println!("\tbest: \t{:?}", best_fitness);
             println!("\tavg: \t{:?}", avg_fitness);
             println!("\tworst: \t{:?}", worst_fitness);
+            let new_specimens_perc = new_specimens_count as f64 / evolution_params.population_count as f64 * 100.;
+            println!("\tnew: \t{:?}, {:?}%", new_specimens_count, new_specimens_count);
 
             //log
             let row = logging::GenerationRecord {
                 generation: generation as usize,
                 best_fitness: best_fitness,
                 avg_fitness: avg_fitness,
-                worst_fitness: worst_fitness
+                worst_fitness: worst_fitness,
+                new_specimens: new_specimens_count
             };
             generations_logger.serialize(row);
         }
@@ -196,7 +211,9 @@ fn main() {
             print!("\n\tFitness  - {:?}", specimen.fitness());
             print!("\n\tGenotype - {:?}", specimen.get_names());
             //print solution
-            plot(&(specimen.genotype.into_iter().map(|c| (*c).clone()).collect()), true);
+            if config.plot_result {
+                plot(&(specimen.genotype.into_iter().map(|c| (*c).clone()).collect()), true);
+            }
         }
         None => print!("No solution found!"),
     }

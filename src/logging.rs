@@ -10,7 +10,8 @@ pub struct GenerationRecord {
     // pub worst_specimen_id: String,
     pub best_fitness: f64,
     pub avg_fitness: f64,
-    pub worst_fitness: f64
+    pub worst_fitness: f64,
+    pub new_specimens: usize
 }
 
 pub fn get_csv_writer(log_path: &str) -> Writer<File> {
