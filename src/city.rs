@@ -33,15 +33,3 @@ impl PartialEq for City {
         self.name == other.name
     }
 }
-
-// impl PartialOrd for City {
-//     fn partial_cmp(&self, other: &City) -> Option<Ordering> {
-//         Some(self.name.cmp(&other.name))
-//     }
-// }
-
-// impl Ord for City {
-//     fn cmp(&self, other: &City) -> Ordering {
-//         self.name.cmp(&other.name)
-//     }
-// }

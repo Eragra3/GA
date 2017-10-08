@@ -64,13 +64,6 @@ fn main() {
     // plot(&cities, false);
 
     let evolution_params = config.evolution_params;
-    // let evolution_params: EvolutionParams = EvolutionParams {
-    //     generations: 3,
-    //     population_count: 100,
-    //     mutation_rate: 0.03,
-    //     crossover_rate: 0.85,
-    //     tournament_size: 2
-    // };
 
     let now = Local::now();
     let generations_log_file_name = format!("{}{}.csv", config.log_directory, now.format("%Y-%m-%d_%H-%M-%S"));
@@ -121,9 +114,6 @@ fn main() {
                 let mut waifu = tournament(&current_generation, &evolution_params);
                 
                 while parent == waifu {
-                    // println!("Can't marry yourself ");
-                    // println!("\nparent - {:?}", parent.get_names());
-                    // println!("\nwaifu - {:?}", waifu.get_names());
                     waifu = tournament(&current_generation, &evolution_params);
                 }
                 
