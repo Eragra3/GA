@@ -142,7 +142,7 @@ fn swap_neighbour<T>(mutable_vector: &mut [T], index: usize) {
 
 fn swap_random<T>(mutable_vector: &mut [T], index: usize, range: f64) {
     let offset = ((rand::random::<f64>() - 0.5) * range) as usize;
-    let mut target_index: usize=  offset + index;;
+    let mut target_index: usize = offset + index;;
     target_index = cmp::min(target_index, mutable_vector.len() - 1);
 
     if target_index == index {

@@ -121,6 +121,7 @@ fn main() {
             let mut new_specimen;
             if rand::random::<f64>() < evolution_params.crossover_rate {
                 let mut waifu = tournament(&current_generation, &evolution_params);
+                
                 while parent == waifu {
                     // println!("Can't marry yourself ");
                     // println!("\nparent - {:?}", parent.get_names());
@@ -135,17 +136,13 @@ fn main() {
             
             new_specimen.mutate(&evolution_params);
             
+            if !evolution_params.allow_twins {
             //do not allow twins
-            if next_generation.contains(&new_specimen) {
-                print!("\t\tTwin!\n");
-                // let pos = next_generation
-                //     .iter()
-                //     .position(|s| s == &new_specimen)
-                //     .unwrap();
-                // let names = next_generation[pos].get_names();
-                // print!("\n\tGenotype - {:?}", names);
-                // println!("\n New specimen genotype - {:?}", new_specimen.get_names());
-                continue;
+                while next_generation.contains(&new_specimen) {
+                    println!("\t\tTwin!\n");
+                    new_specimen.mutate(&evolution_params);
+                    continue;
+                }
             }
 
             next_generation.push(new_specimen);

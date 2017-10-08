@@ -12,7 +12,8 @@ pub struct EvolutionParams {
     pub population_count: usize,
     pub mutation_rate: f64,
     pub crossover_rate: f64,
-    pub tournament_size: usize
+    pub tournament_size: usize,
+    pub allow_twins: bool
 }
 
 #[derive(Serialize, Deserialize)]
@@ -32,7 +33,8 @@ pub fn get_default() -> Configuration {
             population_count: 100,
             mutation_rate: 0.03,
             crossover_rate: 0.85,
-            tournament_size: 2
+            tournament_size: 2,
+            allow_twins: false
         },
         dataset_path: "".to_string(),
         log_results: true,
