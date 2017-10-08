@@ -2,11 +2,14 @@
 evolution_params: 
   generations: 100
   population_count: 100
-  mutation_rate: 0.03
-  crossover_rate: 0.85
+  mutation_rate: 0.02
+  crossover_rate: 0.75
   tournament_size: 2
   allow_twins: false
-dataset_path: ""
+# dataset_path: ""
+# dataset_path: ""
+# dataset_path: ""
+dataset_path: "./data/qa194.tsp"
 log_results: true
 plot_result: false
 log_directory: logs/

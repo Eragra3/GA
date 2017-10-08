@@ -58,10 +58,7 @@ fn main() {
         }
     }
 
-    // let cities: Vec<City> = uwaterloo_reader::read("./data/world.tsp");
-    // let cities: Vec<City> = uwaterloo_reader::read("./data/lu980.tsp");
-    let cities: Vec<City> = uwaterloo_reader::read("./data/dj38.tsp");
-    // let cities: Vec<City> = uwaterloo_reader::read("./data/qa194.tsp");
+    let cities: Vec<City> = uwaterloo_reader::read(&config.dataset_path);
 
     //print map
     // plot(&cities, false);
